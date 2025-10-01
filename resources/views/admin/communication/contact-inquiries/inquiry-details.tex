@@ -1,0 +1,70 @@
+% Setting up the document class and geometry
+\documentclass[a4paper,12pt]{article}
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage{geometry}
+\geometry{margin=1in}
+
+% Including necessary packages
+\usepackage{booktabs}
+\usepackage{hyperref}
+\usepackage{datetime}
+\usepackage{parskip}
+\usepackage{xcolor}
+
+% Configuring font
+\usepackage{times}
+
+% Defining custom commands
+\newcommand{\inquirySubject}{{{ $inquiry->subject }}}
+\newcommand{\inquiryName}{{{ $inquiry->name }}}
+\newcommand{\inquiryEmail}{{{ $inquiry->email }}}
+\newcommand{\inquiryMessage}{{{ $inquiry->message }}}
+\newcommand{\inquiryStatus}{{{ ucfirst($inquiry->status) }}}
+\newcommand{\inquiryCreatedAt}{{{ $inquiry->created_at->format('F d, Y H:i') }}}
+\newcommand{\inquiryRespondedAt}{{{ $inquiry->responded_at ? $inquiry->responded_at->format('F d, Y H:i') : 'N/A' }}}
+
+% Beginning the document
+\begin{document}
+
+% Creating the title
+\begin{center}
+    \textbf{\Large Contact Inquiry Details} \\
+    \vspace{0.2cm}
+    Generated on \today
+\end{center}
+
+% Adding inquiry details section
+\section*{Inquiry Details}
+\begin{tabular}{@{}ll@{}}
+    \toprule
+    \textbf{Field} & \textbf{Value} \\
+    \midrule
+    Subject & \inquirySubject \\
+    Name & \inquiryName \\
+    Email & \inquiryEmail \\
+    Status & \inquiryStatus \\
+    Created At & \inquiryCreatedAt \\
+    Responded At & \inquiryRespondedAt \\
+    \bottomrule
+\end{tabular}
+
+% Adding inquiry message
+\section*{Message}
+\inquiryMessage
+
+% Adding replies section if any
+@if ($inquiry->replies->isNotEmpty())
+    \section*{Replies}
+    @foreach ($inquiry->replies as $reply)
+        \subsection*{Reply by {{ $reply->replied_by ?? 'N/A' }} on {{ $reply->replied_at->format('F d, Y H:i') }}}
+        \textbf{Subject:} {{ $reply->subject }} \\
+        \textbf{Content:} {{ $reply->content }} \\
+        @if ($reply->file_path)
+            \textbf{Attachment:} \href{{{ Storage::url($reply->file_path) }}}{{View Attachment}} \\
+        @endif
+    @endforeach
+@endif
+
+% Ending the document
+\end{document}
